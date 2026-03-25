@@ -17,6 +17,9 @@ public class Seat {
     @ManyToOne
     private Event event;
 
+    @Version
+    private Long version;
+
     public Long getId() {
         return id;
     }
