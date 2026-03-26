@@ -2,8 +2,7 @@ package com.carrefour.kata.controller;
 
 import com.carrefour.kata.domain.Event;
 import com.carrefour.kata.domain.Reservation;
-import com.carrefour.kata.dto.CreateEventRequest;
-import com.carrefour.kata.dto.HoldRequest;
+import com.carrefour.kata.dto.*;
 import com.carrefour.kata.service.EventService;
 import com.carrefour.kata.service.ReservationService;
 import org.springframework.http.HttpStatus;
@@ -16,50 +15,51 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final EventService eventService;
+    private final ReservationMapper mapper;
 
     public ReservationController(ReservationService reservationService,
-                                 EventService eventService) {
+                                 EventService eventService,
+                                 ReservationMapper mapper) {
         this.reservationService = reservationService;
         this.eventService = eventService;
+        this.mapper = mapper;
     }
 
-    // Créer un événement
     @PostMapping("/events")
-    public ResponseEntity<Event> createEvent(@RequestBody CreateEventRequest request) {
+    public ResponseEntity<EventResponse> createEvent(
+            @RequestBody CreateEventRequest request) {
         Event event = eventService.createEvent(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(event);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(mapper.toEventResponse(event));
     }
 
-    // Voir un événement et ses sièges
     @GetMapping("/events/{id}")
-    public ResponseEntity<Event> getEvent(@PathVariable Long id) {
-        return ResponseEntity.ok(eventService.getEvent(id));
+    public ResponseEntity<EventResponse> getEvent(@PathVariable Long id) {
+        return ResponseEntity.ok(mapper.toEventResponse(eventService.getEvent(id)));
     }
 
-    // Réserver un siège (PENDING)
     @PostMapping("/events/{eventId}/reservations")
-    public ResponseEntity<Reservation> hold(
+    public ResponseEntity<ReservationResponse> hold(
             @PathVariable Long eventId,
             @RequestBody HoldRequest request) {
-
         Reservation reservation = reservationService.hold(
                 request.getSeatId(),
                 request.getCustomerEmail()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(mapper.toReservationResponse(reservation));
     }
 
-    // Confirmer le paiement
     @PostMapping("/reservations/{id}/confirm")
-    public ResponseEntity<Reservation> confirm(@PathVariable Long id) {
-        return ResponseEntity.ok(reservationService.confirm(id));
+    public ResponseEntity<ReservationResponse> confirm(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                mapper.toReservationResponse(reservationService.confirm(id))
+        );
     }
 
-    // Annuler
     @DeleteMapping("/reservations/{id}")
     public ResponseEntity<Void> cancel(@PathVariable Long id) {
         reservationService.cancel(id);
         return ResponseEntity.noContent().build();
     }
 }
-
