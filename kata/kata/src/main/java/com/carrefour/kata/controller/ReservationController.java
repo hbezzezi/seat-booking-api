@@ -5,6 +5,7 @@ import com.carrefour.kata.domain.Reservation;
 import com.carrefour.kata.dto.*;
 import com.carrefour.kata.service.EventService;
 import com.carrefour.kata.service.ReservationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class ReservationController {
 
     @PostMapping("/events")
     public ResponseEntity<EventResponse> createEvent(
-            @RequestBody CreateEventRequest request) {
+            @Valid @RequestBody CreateEventRequest request) {
         Event event = eventService.createEvent(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(mapper.toEventResponse(event));
@@ -41,7 +42,7 @@ public class ReservationController {
     @PostMapping("/events/{eventId}/reservations")
     public ResponseEntity<ReservationResponse> hold(
             @PathVariable Long eventId,
-            @RequestBody HoldRequest request) {
+            @Valid @RequestBody HoldRequest request) {
         Reservation reservation = reservationService.hold(
                 request.getSeatId(),
                 request.getCustomerEmail()
